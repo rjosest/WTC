@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import sys
 from subprocess import PIPE
 
 from optparse import OptionParser
@@ -64,23 +65,29 @@ for im in [fixed,moving]:
   tmp_command = tmp_command + " | "+ unu + " 2op + - 1000 | " + unu + " 2op / - 1055 -t float -o %(out)s"
   tmp_command = tmp_command % {'in':im, 'out':out,'sigma':sigma,'r':rate}
   print tmp_command
+  sys.stdout.flush()
   subprocess.call( tmp_command, shell=True)
 
 #Extract lung mask region and dilate result
 dilation_distance=[10,20]
 for kk,im in enumerate([fixed_mask,moving_mask]):
-  out = os.path.join(tmp_dir,im)
+  out = os.path.join(tmp_dir,os.path.basename(im))
   tmp_command = unu + " 3op in_op 1 %(in)s 8 | " + unu + " resample -s x%(r)f x%(r)f x%(r)f -k cheap -o %(out)s"
   tmp_command = tmp_command % {'in':im, 'out':out,'r':rate}
-  #subprocess.call( tmp_command, shell=True)
+  print tmp_command
+  sys.stdout.flush()
+  subprocess.call( tmp_command, shell=True)
   tmp_command = "pxdistancetransform -m Maurer -in %(in)s -out %(out)s"
   tmp_command = tmp_command % {'in':out, 'out':out}
   tmp_command = os.path.join(path['ITKTOOLS_PATH'],tmp_command)
-  #subprocess.call( tmp_command, shell=True)
+  print tmp_command
+  sys.stdout.flush()
+  subprocess.call( tmp_command, shell=True)
   tmp_command = "unu 2op lt %(in)s %(val)d -o %(out)s"
   tmp_command = tmp_command % {'in':out, 'out':out,'val':dilation_distance[kk]}
   tmp_command = os.path.join(path['TEEM_PATH'],tmp_command)
   print tmp_command
+  sys.stdout.flush()
   subprocess.call( tmp_command, shell=True)
 
 #Perform Affine registration
@@ -104,7 +111,8 @@ tmp_command = tmp_command % {'f':fixed_tmp,'m':moving_tmp, \
 'percentage':percentage,'its':its,'nm':deformation_prefix}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
 print tmp_command
-subprocess.call( tmp_command, shell=True)
+sys.stdout.flush()
+subprocess.call( tmp_command, shell=True, env=os.environ.copy())
 
 #Perform Diffeomorphic registration
 syn="100x50x40,1e-6,5"
@@ -121,7 +129,9 @@ tmp_command = tmp_command % {'affine':affine_tfm, 'f':fixed_tmp, 'm':moving_tmp,
 'syn':syn,'f_mask':fixed_mask_tmp,'m_mask':moving_mask_tmp, \
 'nm':deformation_prefix,'out':moving_deformed_tmp,'out_inv':fixed_deformed_tmp}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
-subprocess.call( tmp_command, shell=True)
+print tmp_command
+sys.stdout.flush()
+subprocess.call( tmp_command, shell=True, env=os.environ.copy())
 
 #Apply composite transform (if necessary)
 # The previous command already outputs the transformed images composed with both
@@ -132,14 +142,14 @@ tmp_command = "antsApplyTransforms -d 3 -i %(m)s -r %(f)s -n linear \
 tmp_command = tmp_command % {'f':fixed,'m':moving, \
 'elastic-tfm':elastic_tfm,'affine-tfm':affine_tfm,'deformed':moving_deformed_tmp}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
-subprocess.call( tmp_command, shell=True)
+subprocess.call( tmp_command, shell=True, env=os.environ.copy())
 
 tmp_command = "antsApplyTransforms -d 3 -i %(f)s -r %(m)s -n linear \
 -t [%(affine-tfm)s,1] -t %(elastic-inv-tfm)s  -o %(deformed)s"
 tmp_command = tmp_command % {'f':fixed,'m':moving, \
 'elastic-inv-tfm':elastic_inv_tfm,'affine-tfm':affine_tfm,'deformed':fixed_deformed_tmp}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
-subprocess.call( tmp_command, shell=True)
+subprocess.call( tmp_command, shell=True, env=os.environ.copy())
 
 # Do nrrd gzip compression and type casting for the output images
 for im_out,im_in in zip([fixed_deformed,moving_deformed],[fixed_deformed_tmp,moving_deformed_tmp]):
