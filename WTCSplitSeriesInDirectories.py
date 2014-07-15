@@ -1,8 +1,10 @@
-from os import listdir
-from os.path import isfile, join, basename
+from os import listdir, mkdir
+from os.path import isfile, join, basename, isdir
+import os
 import shutil
 import dicom
 import pandas as pd
+import csv
 
 from optparse import OptionParser
 
@@ -10,10 +12,12 @@ parser = OptionParser()
 
 parser.add_option("-i",dest="in_path",help="input directory with DICOM images")
 parser.add_option("-o",dest="out_path",help="output directory")
+parser.add_option("-v",dest="caselist_filename",help="CSV files with directory names that are generated")
 (options, args) = parser.parse_args()
 
 in_path=options.in_path
 out_path=options.out_path
+caselist_filename = options.caselist_filename
 
 dicom_files = [ f for f in listdir(in_path) if isfile(join(in_path,f)) ]
 
@@ -29,6 +33,8 @@ for ff in dicom_files:
     row_list.append(pd.Series(dict1))
     
 df = pd.DataFrame(row_list)
+
+case_list=list()
 
 for patient,group_p in df.groupby('PatientName'):
   for date,group_d in group_p.groupby('SeriesDate'):
@@ -48,17 +54,22 @@ for patient,group_p in df.groupby('PatientName'):
   
     
     #Select series + get file name
+  
     for idx,cycle in zip([-1,-2],cycles):
       df_series=df[df['SeriesInstanceUID']==vv.keys()[idx]]
       
       #Create directory for each group
       case_name=df_series['PatientName'].values[0]+'_'+df_series['SeriesDate'].values[0]+'_'+ cycle+'_Ser' \
                   + str(df_series['SeriesNumber'].values[0])
-      
-      if os.path.isdir(out_path) == True:
+      case_list.append([case_name])
+      if isdir(join(out_path,case_name)) == False:
         os.mkdir(join(out_path,case_name))
       
       for src in df_series['File']:
         dest = join(out_path,case_name,basename(src))
         shutil.copy(src,dest)
 
+
+with open(caselist_filename, 'w') as csvfile:
+  writer = csv.writer(csvfile)
+  writer.writerows(case_list)
