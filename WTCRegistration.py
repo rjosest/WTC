@@ -98,7 +98,7 @@ for kk,im in enumerate([fixed_mask,moving_mask]):
 #Perform Affine registration
 if fast == True:
   percentage=0.1
-  its=10000x0x0
+  its="10000x0x0"
   syn="100x0x0,0,5"
 else:
   percentage=0.3
