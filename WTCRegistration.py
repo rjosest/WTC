@@ -105,7 +105,7 @@ else:
   its="10000x5000x2000"
   syn="100x100x50,-0.01,5"
 
-tmp_command = "antsRegistration -d %(dim)s -r [ %(f)s,%(m)s,0] \
+tmp_command = "antsRegistration -d %(dim)s -r [ %(f)s,%(m)s,2] \
                -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
                -t  translation[ 0.1 ] \
                -c [%(its)s,1.e-8,20]  \
