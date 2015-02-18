@@ -98,28 +98,31 @@ for kk,im in enumerate([fixed_mask,moving_mask]):
 #Perform Affine registration
 if fast == True:
   percentage=0.1
-  its="10000x0x0"
-  syn="100x0x0,0,5"
+  its="10000x1000x0"
+  syn="50x25x0,0,5"
 else:
   percentage=0.3
   its="10000x5000x2000"
-  syn="100x100x50,-0.01,5"
+  syn="50x50x20,0.001,5"
 
 tmp_command = "antsRegistration -d %(dim)s -r [ %(f)s,%(m)s,2] \
                -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
                -t  translation[ 0.1 ] \
-               -c [%(its)s,1.e-8,20]  \
+               -c [%(its)s,1.e-6,20]  \
                -s 4x2x1vox \
                -f 6x4x2 \
                -l 1 \
                -m mattes[  %(f)s, %(m)s , 1 , 32, regular, %(percentage)f ] \
                -t affine[ 0.1 ] \
-               -c [%(its)s,1.e-8,20]  \
+               -c [%(its)s,1.e-6,20]  \
                -s 4x2x1vox  \
                -f 3x2x1 \
                -l 1 -u 1 -z 1 \
                -o [%(nm)s]"
+#-x [%(f_mask)s,%(m_mask)s] \
+
 tmp_command = tmp_command % {'f':fixed_tmp,'m':moving_tmp, \
+'f_mask':fixed_mask_tmp,'m_mask':moving_mask_tmp, \
 'percentage':percentage,'its':its,'nm':deformation_prefix,'dim':dimension}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
 print tmp_command
@@ -133,9 +136,10 @@ tmp_command = "antsRegistration -d %(dim)s -r %(affine)s \
 -c [ %(syn)s ]  \
 -s 2x1x0vox  \
 -f 4x2x1 \
--x [%(f_mask)s,%(m_mask)s] \
 -l 1 -z 1 \
 -o [%(nm)s,%(out)s,%(out_inv)s]"
+#-x [%(f_mask)s,%(m_mask)s] \
+
 tmp_command = tmp_command % {'affine':affine_tfm, 'f':fixed_tmp, 'm':moving_tmp, \
 'syn':syn,'f_mask':fixed_mask_tmp,'m_mask':moving_mask_tmp, \
 'nm':deformation_prefix,'out':moving_deformed_tmp,'out_inv':fixed_deformed_tmp,'dim':dimension}

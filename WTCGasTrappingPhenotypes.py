@@ -58,12 +58,15 @@ insp_mask = os.path.join(data_dir,insp_cid + "_partialLungLabelMap.nhdr")
 exp_mask = os.path.join(data_dir,exp_cid + "_partialLungLabelMap.nhdr")
 insp_mask_tmp = os.path.join(tmp_dir,insp_cid + "_partialLungLabelMap.nhdr")
 exp_mask_tmp = os.path.join(tmp_dir,exp_cid + "_partialLungLabelMap.nhdr")
+insp_wl_mask = os.path.join(tmp_dir,insp_cid + "_wholelung.nhdr")
 
 jacobian_tmp = deformation_prefix_tmp + "jacobian.nhdr"
 jacobian_nifti_tmp = deformation_prefix_tmp + "jacobian.nii.gz"
 
+mass_file = os.path.join(data_dir,insp_cid + "_residualMass.nhdr")
+mass_mask_file = os.path.join(data_dir,insp_cid + "_residualMassMask.nhdr")
+
 #Conditions input images: Gaussian blurring to account for SHARP kernel
-#Compute tissue compartment volume (silly linear mapping)
 unu = os.path.join(path['TEEM_PATH'],"unu")
 for im in [insp,exp_to_insp]:
   out = os.path.join(tmp_dir,os.path.basename(im))
@@ -71,7 +74,14 @@ for im in [insp,exp_to_insp]:
   tmp_command = tmp_command % {'in':im, 'out':out,'sigma':sigma,'r':rate}
   print tmp_command
   subprocess.call( tmp_command, shell=True)
+for im in [insp_mask]:
+  out = os.path.join(tmp_dir,os.path.basename(im))
+  tmp_command = unu + " resample -s x%(r)f x%(r)f x%(r)f -k cheap -i %(in)s -o %(out)s"
+  tmp_command = tmp_command % {'in':im, 'out':out,'r':rate}
+  print tmp_command
+  subprocess.call( tmp_command, shell=True)
 
+  
 #Define region labels and variables
 regions=[(5,7),(5,5),(6,6),(7,7)]
 regions_labels=['Global','Upper','Middle','Lower']
@@ -97,16 +107,16 @@ for ii,rr in enumerate(regions):
 phenos[phenos_labels[0]]=fSAD
 
 # Compute Gas Trapping metric using Jacobian
-tmp_command = "ANTSJacobian 3 %(warp)s %(out)s"
-tmp_command = tmp_command % {'warp': elastic_tfm, 'out': deformation_prefix_tmp}
+tmp_command = "CreateJacobianDeterminantImage 3 %(warp)s %(out)s 0 1"
+tmp_command = tmp_command % {'warp': elastic_tfm, 'out': jacobian_tmp}
 tmp_command = os.path.join(path['ANTS_PATH'],tmp_command)
 print tmp_command
 subprocess.call( tmp_command, shell=True )
 
-tmp_command = "c3d %(in)s -o %(out)s"
-tmp_command = tmp_command % {'in': jacobian_nifti_tmp, 'out': jacobian_tmp}
-print tmp_command
-subprocess.call( tmp_command, shell=True )
+#tmp_command = "c3d %(in)s -o %(out)s"
+#tmp_command = tmp_command % {'in': jacobian_nifti_tmp, 'out': jacobian_tmp}
+#print tmp_command
+#subprocess.call( tmp_command, shell=True )
 
 tmp_command = unu + " resample -k tent -s %(x)d %(y)d %(z)d -i %(in)s -o %(out)s"
 tmp_command = tmp_command % {'x':insp_header['sizes'][0],'y':insp_header['sizes'][1],'z':insp_header['sizes'][2],'in':jacobian_tmp,'out':jacobian_tmp}
@@ -116,8 +126,48 @@ subprocess.call( tmp_command, shell=True )
 jac_im, jac_header = nrrd.read(jacobian_tmp)
 
 #Compute residual mass image:
+sp_dir=insp_header['space directions']
+voxel_vol=sp_dir[0][0]*sp_dir[1][1]*sp_dir[2][2]
+
 mass_th = [50,75,100]
 mass_im = (reg_exp_im - insp_im) * jac_im
+#mass2_im = (insp_im - jac_im* reg_exp_im) *(1-jac_im)
+mass2_im = ((insp_im+1000) - jac_im * (reg_exp_im+1000))*voxel_vol
+#mass3_im = (2* insp_im - jac_im*(insp_im+reg_exp_im))
+
+#Get lung mask
+tmp_command = "ExtractChestLabelMap -i %(lm)s -r WholeLung -o %(out-lm)s"
+tmp_command = tmp_command % {'lm': insp_mask_tmp,'out-lm': insp_wl_mask}
+print tmp_command
+subprocess.call( tmp_command, shell=True )
+
+wl_mask_im,wl_mask_header = nrrd.read(insp_wl_mask)
+
+#Mass mass2 and save
+print "Masking residual mass map"
+#2. Remove vessels
+mass2_im[insp_im > -500]=0
+#3. Clamp mass outside range
+mass2_im[mass2_im<-15]=0
+mass2_im[mass2_im>15]=0
+#1. Isolate lung
+mass2_im[wl_mask_im == 0]=1000
+#mass2_im[np.logical_and(mass2_im<-20,mass2_im>20)]=0
+#3. Create gain/loss mask
+mass2_mask=np.zeros(mass2_im.shape)
+#Mass gain: Label 2
+mass2_mask[mass2_im>3]=2
+#Mass loss: label 1
+mass2_mask[mass2_im<-3]=1
+mass2_mask[mass2_im==1000]=0
+
+print "Saving residual mask map"
+nrrd.write(mass_file,mass2_im,insp_header)
+nrrd.write(mass_mask_file,mass2_mask,insp_header)
+
+
+exit 
+
 resmass = list()
 for th in mass_th:
   mass_mask = np.logical_and(mass_im < th, insp_im > -950)
@@ -130,7 +180,7 @@ for th in mass_th:
 
 phenos[phenos_labels[1]]=resmass
 
-#nrrd.write('mass.nrrd',mass_im,insp_header)
+
 
 # Obtain histogram metrics from the Jacobian
 jacstats = list()
