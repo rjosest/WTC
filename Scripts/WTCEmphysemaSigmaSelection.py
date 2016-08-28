@@ -26,8 +26,8 @@ cid = options.cid
 tmpDir = options.tmpDirectory
 
 
-ctFileName = os.path.join(options.dataDirectory,cid + ".nhdr")
-plFileName = os.path.join(tmpDir,cid + "_partialLungLabelMap.nhdr")
+ctFileName = os.path.join(options.dataDirectory,cid + ".nrrd")
+plFileName = os.path.join(tmpDir,cid + "_partialLungLabelMap.nrrd")
 csvFileName = os.path.join(tmpDir,cid + "_emphysemaMeasures")
 qualityFileName = os.path.join(tmpDir,cid + "_labelMapCoronalProjectionImage.png")
 quality2FileName= os.path.join(tmpDir,cid + "_labelMapAxialProjectionImage.png")
@@ -45,8 +45,8 @@ tmpCommand = os.path.join(lpiPath,tmpCommand);
 
 
 #Compute distance map for rine/core computations
-distanceImage = os.path.join(tmpDir,cid + "_distanceMap.nhdr")
-lungImage = os.path.join(tmpDir,cid + "_lung.nhdr")
+distanceImage = os.path.join(tmpDir,cid + "_distanceMap.nrrd")
+lungImage = os.path.join(tmpDir,cid + "_lung.nrrd")
 tmpCommand ="unu 3op in_cl 2 %(lm-in)s 7 -o %(lung)s"
 tmpCommand = tmpCommand % {'lm-in':plFileName,'lung':lungImage}
 subprocess.call( tmpCommand, shell=True)
@@ -60,7 +60,7 @@ print tmpCommand
 for ss in range(len(sigma)):
   # Smooth data to normalized recon kernels
   print "Smoothing "+str(sigma[ss])
-  smoothImage = os.path.join(tmpDir,cid + "_smooth.nhdr")
+  smoothImage = os.path.join(tmpDir,cid + "_smooth.nrrd")
   tmpCommand = "unu resample -k dgauss:%(sigma)f,3 -s x1 x1 = -i %(vol)s -o %(out)s"
   tmpCommand = tmpCommand % {'vol':ctFileName, 'out':smoothImage, 'sigma':float(sigma[ss])}
   print tmpCommand

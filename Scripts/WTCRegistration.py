@@ -40,14 +40,14 @@ for path_name in toolsPaths:
 
 
 # Set up input, output and temp volumes
-fixed = os.path.join(data_dir,fixed_cid + ".nhdr")
-moving = os.path.join(data_dir,moving_cid + ".nhdr")
-fixed_tmp = os.path.join(tmp_dir,fixed_cid + ".nhdr")
-moving_tmp = os.path.join(tmp_dir,moving_cid + ".nhdr")
-moving_deformed = os.path.join(data_dir,moving_cid + "_to_" + fixed_cid + ".nhdr")
-fixed_deformed = os.path.join(data_dir,fixed_cid + "_to_"+ moving_cid + ".nhdr")
-moving_deformed_tmp = os.path.join(tmp_dir,moving_cid + "_to_" + fixed_cid + ".nhdr")
-fixed_deformed_tmp = os.path.join(tmp_dir,fixed_cid + "_to_"+ moving_cid + ".nhdr")
+fixed = os.path.join(data_dir,fixed_cid + ".nrrd")
+moving = os.path.join(data_dir,moving_cid + ".nrrd")
+fixed_tmp = os.path.join(tmp_dir,fixed_cid + ".nrrd")
+moving_tmp = os.path.join(tmp_dir,moving_cid + ".nrrd")
+moving_deformed = os.path.join(data_dir,moving_cid + "_to_" + fixed_cid + ".nrrd")
+fixed_deformed = os.path.join(data_dir,fixed_cid + "_to_"+ moving_cid + ".nrrd")
+moving_deformed_tmp = os.path.join(tmp_dir,moving_cid + "_to_" + fixed_cid + ".nrrd")
+fixed_deformed_tmp = os.path.join(tmp_dir,fixed_cid + "_to_"+ moving_cid + ".nrrd")
 
 
 deformation_prefix = os.path.join(data_dir,moving_cid + "_to_" + fixed_cid + "_tfm_")
@@ -55,10 +55,10 @@ affine_tfm = deformation_prefix + "0GenericAffine.mat"
 elastic_tfm = deformation_prefix + "1Warp.nii.gz"
 elastic_inv_tfm = deformation_prefix + "1InverseWarp.nii.gz"
 
-fixed_mask = os.path.join(data_dir,fixed_cid + "_partialLungLabelMap.nhdr")
-moving_mask = os.path.join(data_dir,moving_cid + "_partialLungLabelMap.nhdr")
-fixed_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_partialLungLabelMap.nhdr")
-moving_mask_tmp = os.path.join(tmp_dir,moving_cid + "_partialLungLabelMap.nhdr")
+fixed_mask = os.path.join(data_dir,fixed_cid + "_partialLungLabelMap.nrrd")
+moving_mask = os.path.join(data_dir,moving_cid + "_partialLungLabelMap.nrrd")
+fixed_mask_tmp = os.path.join(tmp_dir,fixed_cid + "_partialLungLabelMap.nrrd")
+moving_mask_tmp = os.path.join(tmp_dir,moving_cid + "_partialLungLabelMap.nrrd")
 
 #Conditions input images: Gaussian blurring to account for SHARP kernel
 #Compute tissue compartment volume (silly linear mapping)

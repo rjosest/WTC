@@ -40,12 +40,12 @@ for path_name in toolsPaths:
     exit()
 
 # Set up input and output and temp volumes
-insp  = os.path.join(data_dir,insp_cid + ".nhdr")
-exp = os.path.join(data_dir,exp_cid + ".nhdr")
-insp_tmp = os.path.join(tmp_dir,insp_cid + ".nhdr")
-exp_tmp = os.path.join(tmp_dir,exp_cid + ".nhdr")
-exp_to_insp = os.path.join(data_dir,exp_cid + "_to_" + insp_cid + ".nhdr")
-exp_to_insp_tmp = os.path.join(tmp_dir,exp_cid + "_to_" + insp_cid + ".nhdr")
+insp  = os.path.join(data_dir,insp_cid + ".nrrd")
+exp = os.path.join(data_dir,exp_cid + ".nrrd")
+insp_tmp = os.path.join(tmp_dir,insp_cid + ".nrrd")
+exp_tmp = os.path.join(tmp_dir,exp_cid + ".nrrd")
+exp_to_insp = os.path.join(data_dir,exp_cid + "_to_" + insp_cid + ".nrrd")
+exp_to_insp_tmp = os.path.join(tmp_dir,exp_cid + "_to_" + insp_cid + ".nrrd")
 
 deformation_prefix = os.path.join(data_dir,exp_cid + "_to_" + insp_cid + "_tfm_")
 deformation_prefix_tmp = os.path.join(tmp_dir,exp_cid + "_to_" + insp_cid + "_tfm_")
@@ -54,17 +54,17 @@ affine_tfm = deformation_prefix + "0GenericAffine.mat"
 elastic_tfm = deformation_prefix + "1Warp.nii.gz"
 elastic_inv_tfm = deformation_prefix + "1InverseWarp.nii.gz"
 
-insp_mask = os.path.join(data_dir,insp_cid + "_partialLungLabelMap.nhdr")
-exp_mask = os.path.join(data_dir,exp_cid + "_partialLungLabelMap.nhdr")
-insp_mask_tmp = os.path.join(tmp_dir,insp_cid + "_partialLungLabelMap.nhdr")
-exp_mask_tmp = os.path.join(tmp_dir,exp_cid + "_partialLungLabelMap.nhdr")
-insp_wl_mask = os.path.join(tmp_dir,insp_cid + "_wholelung.nhdr")
+insp_mask = os.path.join(data_dir,insp_cid + "_partialLungLabelMap.nrrd")
+exp_mask = os.path.join(data_dir,exp_cid + "_partialLungLabelMap.nrrd")
+insp_mask_tmp = os.path.join(tmp_dir,insp_cid + "_partialLungLabelMap.nrrd")
+exp_mask_tmp = os.path.join(tmp_dir,exp_cid + "_partialLungLabelMap.nrrd")
+insp_wl_mask = os.path.join(tmp_dir,insp_cid + "_wholelung.nrrd")
 
-jacobian_tmp = deformation_prefix_tmp + "jacobian.nhdr"
+jacobian_tmp = deformation_prefix_tmp + "jacobian.nrrd"
 jacobian_nifti_tmp = deformation_prefix_tmp + "jacobian.nii.gz"
 
-mass_file = os.path.join(data_dir,insp_cid + "_residualMass.nhdr")
-mass_mask_file = os.path.join(data_dir,insp_cid + "_residualMassMask.nhdr")
+mass_file = os.path.join(data_dir,insp_cid + "_residualMass.nrrd")
+mass_mask_file = os.path.join(data_dir,insp_cid + "_residualMassMask.nrrd")
 
 #Conditions input images: Gaussian blurring to account for SHARP kernel
 unu = os.path.join(path['TEEM_PATH'],"unu")
