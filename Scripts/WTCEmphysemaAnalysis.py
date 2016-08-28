@@ -31,13 +31,13 @@ itkToolsPath="/data/acil/Code/ITKTools-build/"
 tmpCommand = "LungMaskExtraction %(vol)s %(output)s"
 tmpCommand = tmpCommand % {'vol':ctFileName, 'output':plFileName}
 tmpCommand = os.path.join(lpiPath,tmpCommand);
-#subprocess.call( tmpCommand, shell=True)
+subprocess.call( tmpCommand, shell=True)
 
 # Smooth data to normalized recon kernels
 smoothImage = os.path.join(tmpDir,cid + "_smooth.nhdr")
 tmpCommand = "unu resample -k dgauss:0.75,3 -s x1 x1 = -i %(vol)s -o %(out)s"
 tmpCommand = tmpCommand % {'vol':ctFileName, 'out':smoothImage}
-#subprocess.call (tmpCommand, shell=True)
+subprocess.call (tmpCommand, shell=True)
 
 #Compute distance map for rine/core computations
 distanceImage = os.path.join(tmpDir,cid + "_distanceMap.nhdr")
@@ -50,7 +50,7 @@ tmpCommand = "pxdistancetransform -in %(lung)s -out %(distance-map)s -m Maurer"
 tmpCommand = tmpCommand % {'lung':lungImage,'distance-map':distanceImage}
 tmpCommand = os.path.join(itkToolsPath,"bin",tmpCommand)
 print tmpCommand
-#subprocess.call( tmpCommand, shell=True )
+subprocess.call( tmpCommand, shell=True )
 
 tmpCommand = "GenerateEmphysemaMeasures %(vol)s %(output)s --outputCSV %(res)s -d %(dm)s"
 tmpCommand = tmpCommand % {'vol':smoothImage, 'output':plFileName, 'res':csvFileName, 'dm':distanceImage}
